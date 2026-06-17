@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NoxiCraft — ламповый ванильный сервер</title>
+  <style>
+    /* ===== ОБЩАЯ БАЗА ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: #1a1410;
+      background-image: radial-gradient(circle at 30% 20%, #2f231c 0%, #150f0c 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: 'Courier New', Courier, 'VT323', monospace;
+      padding: 24px 16px;
+    }
+
+    /* Главный контейнер — как "доска" */
+    .container {
+      max-width: 960px;
+      width: 100%;
+      background: #f1e8da;
+      background-image: url('data:image/svg+xml;utf8,<svg width="120" height="120" viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg"><rect width="120" height="120" fill="%23f1e8da"/><path d="M30 30 L36 26 L42 30 L38 36 L42 42 L36 38 L30 42 L34 36 Z" fill="%23ddd0be" opacity="0.3"/><path d="M80 80 L86 76 L92 80 L88 86 L92 92 L86 88 L80 92 L84 86 Z" fill="%23ddd0be" opacity="0.3"/><circle cx="60" cy="60" r="6" fill="%23cebeaa" opacity="0.2"/></svg>');
+      background-repeat: repeat;
+      border: 10px solid #b09078;
+      border-radius: 40px 40px 30px 30px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.8), inset 0 0 0 3px #dac8b4;
+      padding: 30px 32px 36px;
+      margin: 16px 0;
+      transition: 0.1s;
+    }
+
+    /* ===== ШАПКА ===== */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 5px dashed #b09078;
+      padding-bottom: 18px;
+      margin-bottom: 22px;
+      flex-wrap: wrap;
+    }
+
+    .logo h1 {
+      font-size: 3.2rem;
+      font-weight: normal;
+      letter-spacing: 3px;
+      color: #281e16;
+      text-shadow: 5px 5px 0 #d4bea8;
+      font-family: 'Courier New', Courier, 'VT323', monospace;
+      line-height: 1;
+    }
+
+    .logo h1 small {
+      font-size: 1.2rem;
+      display: block;
+      color: #5c4232;
+      background: #dac8b4;
+      padding: 0 18px;
+      border-radius: 40px;
+      letter-spacing: 2px;
+      margin-top: 6px;
+      width: fit-content;
+      text-shadow: none;
+    }
+
+    .torch {
+      font-size: 3.8rem;
+      filter: drop-shadow(0 0 12px #f5b342);
+      transform: rotate(6deg);
+    }
+
+    /* ===== НАВИГАЦИЯ ===== */
+    .nav {
+      display: flex;
+      gap: 16px;
+      margin: 18px 0 14px 0;
+      flex-wrap: wrap;
+    }
+
+    .nav a {
+      background: #dac8b4;
+      padding: 12px 28px;
+      border-radius: 60px;
+      text-decoration: none;
+      color: #1f160f;
+      font-weight: bold;
+      font-size: 1.4rem;
+      border: 4px solid #a8846a;
+      box-shadow: 0 5px 0 #6e5340;
+      transition: 0.04s linear;
+      font-family: 'Courier New', Courier, monospace;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .nav a:hover {
+      background: #ece0d0;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 0 #6e5340;
+    }
+
+    .nav a.active {
+      background: #a8846a;
+      border-color: #5e4030;
+      box-shadow: 0 5px 0 #3f2d20;
+      color: #fcf5ea;
+      pointer-events: none;
+    }
+
+    /* ===== КОНТЕНТ ===== */
+    .content {
+      background: rgba(241, 232, 218, 0.5);
+      backdrop-filter: blur(2px);
+      padding: 20px 18px 10px;
+      border-radius: 40px;
+      border: 2px solid #d4bea8;
+      margin-top: 12px;
+    }
+
+    h2 {
+      font-size: 2.6rem;
+      color: #2d1f15;
+      border-left: 14px solid #a8846a;
+      padding-left: 22px;
+      margin: 6px 0 20px 0;
+      font-weight: normal;
+      letter-spacing: 1px;
+    }
+
+    h3 {
+      font-size: 2rem;
+      color: #3f2d20;
+      margin-top: 28px;
+      font-weight: normal;
+      border-bottom: 3px dotted #b09078;
+      padding-bottom: 8px;
+    }
+
+    p, li {
+      font-size: 1.35rem;
+      line-height: 1.7;
+      color: #221912;
+      font-family: 'Courier New', Courier, monospace;
+    }
+
+    /* Список правил — с иконками */
+    .rules-list {
+      list-style: none;
+      padding-left: 6px;
+    }
+
+    .rules-list li {
+      padding: 14px 16px 14px 62px;
+      background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" viewBox="0 0 24 24"><path fill="%239c765c" d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>') left center no-repeat;
+      background-size: 38px;
+      margin-bottom: 14px;
+      border-bottom: 2px solid #dac8b4;
+    }
+
+    .rules-list li:last-child {
+      border-bottom: none;
+    }
+
+    /* IP-блок */
+    .ip-block {
+      background: #2d1f15;
+      color: #f1e8da;
+      padding: 12px 28px;
+      border-radius: 60px;
+      font-size: 2rem;
+      display: inline-block;
+      letter-spacing: 2px;
+      box-shadow: inset 0 -5px 0 #6e5340;
+      font-family: 'Courier New', Courier, monospace;
+    }
+
+    .badge {
+      background: #a8846a;
+      border: 3px solid #6e5340;
+      padding: 4px 18px;
+      border-radius: 40px;
+      color: #1f160f;
+      font-weight: bold;
+    }
+
+    .footer {
+      margin-top: 30px;
+      font-size: 1.2rem;
+      text-align: center;
+      color: #5c4232;
+      border-top: 3px dashed #b09078;
+      padding-top: 24px;
+      letter-spacing: 0.8px;
+    }
+
+    .footer span {
+      background: #dac8b4;
+      padding: 4px 22px;
+      border-radius: 60px;
+    }
+
+    /* Адаптив */
+    @media (max-width: 650px) {
+      .container { padding: 18px; }
+      .logo h1 { font-size: 2.4rem; }
+      .nav a { font-size: 1rem; padding: 8px 16px; }
+      .ip-block { font-size: 1.5rem; padding: 8px 18px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========================================================= -->
+  <!--  СТРАНИЦА 1 — INDEX.HTML  (Главная)                       -->
+  <!-- ========================================================= -->
+  <div class="container" id="page-index">
+    <div class="header">
+      <div class="logo">
+        <h1>⛏️ NoxiCraft</h1>
+        <small>✦ ламповый ваниль без привата ✦</small>
+      </div>
+      <div class="torch">🔥</div>
+    </div>
+
+    <div class="nav">
+      <a href="#" class="active">Главная</a>
+      <a href="#page-rules">Правила</a>
+    </div>
+
+    <div class="content">
+      <h2>🌿 Добро пожаловать!</h2>
+      <p style="font-size:1.6rem; margin-bottom: 20px;">
+        <span class="ip-block">ast.altyn.games:55090</span>
+      </p>
+      <p style="margin-bottom: 24px;">
+        <strong>Ванильный выживание</strong> — никаких приватов, только честная игра и уют.<br>
+        Сервер живёт по старым правилам: <span class="badge">играй честно</span> и уважай других.
+      </p>
+
+      <h3>📌 Что такое NoxiCraft?</h3>
+      <ul class="rules-list" style="list-style: none; padding-left: 0;">
+        <li style="background: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2238%22 height=%2238%22 viewBox=%220 0 24 24%22><path fill=%22%239c765c%22 d=%22M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z%22/></svg>') left center no-repeat; background-size: 38px; padding-left: 62px;">
+          <strong>Чистый ваниль</strong> — никаких модов, приватов, телепортов. Только майнкрафт.
+        </li>
+        <li style="background: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2238%22 height=%2238%22 viewBox=%220 0 24 24%22><path fill=%22%239c765c%22 d=%22M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z%22/></svg>') left center no-repeat; background-size: 38px; padding-left: 62px;">
+          <strong>Дружелюбное сообщество</strong> — помогаем друг другу, строим и исследуем.
+        </li>
+        <li style="background: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2238%22 height=%2238%22 viewBox=%220 0 24 24%22><path fill=%22%239c765c%22 d=%22M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z%22/></svg>') left center no-repeat; background-size: 38px; padding-left: 62px;">
+          <strong>Никакого гриферства</strong> — мы за созидание и уважение к труду.
+        </li>
+      </ul>
+
+      <div style="margin-top: 24px; background: #e6d7c4; border-radius: 60px; padding: 12px 20px; text-align: center; border: 3px solid #b09078;">
+        <p style="font-size: 1.4rem;">✨ <strong>IP:</strong> ast.altyn.games:55090  &nbsp;|&nbsp; <strong>Версия:</strong> 1.21.11</p>
+      </div>
+    </div>
+
+    <div class="footer">
+      <span>💛 NoxiCraft — играй сердцем</span>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!--  СТРАНИЦА 2 — PRAVILA.HTML  (Правила)                    -->
+  <!-- ========================================================= -->
+  <div class="container" id="page-rules" style="display: none;">
+    <div class="header">
+      <div class="logo">
+        <h1>⚖️ NoxiCraft</h1>
+        <small>✦ правила сервера ✦</small>
+      </div>
+      <div class="torch">📜</div>
+    </div>
+
+    <div class="nav">
+      <a href="#page-index">Главная</a>
+      <a href="#" class="active">Правила</a>
+    </div>
+
+    <div class="content">
+      <h2>📋 Правила сервера</h2>
+      <p style="font-size:1.4rem; margin-bottom: 22px; background: #dac8b4; padding: 8px 24px; border-radius: 60px; display: inline-block;">
+        ⚡ три основных правила
+      </p>
+
+      <ul class="rules-list">
+        <li>
+          <strong>🚫 Играть без читов</strong><br>
+          Запрещены любые виды читов, x-ray, автокликеры, боты и прочее. Только честная игра.
+        </li>
+        <li>
+          <strong>🤝 Без оскорблений других игроков</strong><br>
+          Уважайте друг друга. Любые оскорбления, токсичность и травля караются вечным баном.
+        </li>
+        <li>
+          <strong>🛡️ Без вреда проекту</strong><br>
+          Запрещены лаг-машины, ДДОС-атаки, попытки сломать сервер или навредить его работе.
+        </li>
+      </ul>
+
+      <h3>📌 Дополнительные нормы</h3>
+      <ul class="rules-list">
+        <li style="background: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2236%22 height=%2236%22 viewBox=%220 0 24 24%22><path fill=%22%239c765c%22 d=%22M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z%22/></svg>') left center no-repeat; background-size: 36px; padding-left: 58px;">
+          <strong>Грифинг запрещён</strong> — не ломайте постройки других игроков.
+        </li>
+        <li style="background: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2236%22 height=%2236%22 viewBox=%220 0 24 24%22><path fill=%22%239c765c%22 d=%22M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z%22/></svg>') left center no-repeat; background-size: 36px; padding-left: 58px;">
+          <strong>Не спамьте</strong> — чат не для флуда и рекламы.
+        </li>
+        <li style="background: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2236%22 height=%2236%22 viewBox=%220 0 24 24%22><path fill=%22%239c765c%22 d=%22M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z%22/></svg>') left center no-repeat; background-size: 36px; padding-left: 58px;">
+          <strong>Играйте в удовольствие</strong> — сервер создан для лампового времяпрепровождения.
+        </li>
+      </ul>
+
+      <div style="margin-top: 30px; background: #2d1f15; color: #f1e8da; padding: 14px 24px; border-radius: 60px; text-align: center; border: 3px solid #a8846a;">
+        <p style="color: #f1e8da; font-size: 1.4rem;">⚠️ Нарушение правил = бан без предупреждения</p>
+      </div>
+    </div>
+
+    <div class="footer">
+      <span>📖 NoxiCraft — уважение и честность</span>
+    </div>
+  </div>
+
+
+  <!-- ========================================================= -->
+  <!--  СТРАНИЦА 3 —  (дополнительная, например "О нас")         -->
+  <!--  Сделаем как страницу "О сервере" — тоже в стиле          -->
+  <!-- ========================================================= -->
+  <div class="container" id="page-about" style="display: none;">
+    <div class="header">
+      <div class="logo">
+        <h1>🧭 NoxiCraft</h1>
+        <small>✦ о сервере ✦</small>
+      </div>
+      <div class="torch">⛺</div>
+    </div>
+
+    <div class="nav">
+      <a href="#page-index">Главная</a>
+      <a href="#page-rules">Правила</a>
+    </div>
+
+    <div class="content">
+      <h2>🌟 О NoxiCraft</h2>
+      <p style="font-size:1.5rem; margin-bottom: 16px;">
+        <span class="ip-block">ast.altyn.games:55090</span>
+      </p>
+      <p style="margin-bottom: 20px;">
+        <strong>NoxiCraft</strong> — это сервер для тех, кто ценит настоящий майнкрафт: без приватов, без донатных привилегий, без лишних плагинов. 
+        Только вы, друзья и бескрайний мир.
+      </p>
+
+      <h3>🔹 Почему мы?</h3>
+      <ul class="rules-list">
+        <li style="background: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2238%22 height=%2238%22 viewBox=%220 0 24 24%22><path fill=%22%239c765c%22 d=%22M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z%22/></svg>') left center no-repeat; background-size: 38px; padding-left: 62px;">
+          <strong>Полный ваниль</strong> — никаких /tp, /home, приватов. Всё по-честному.
+        </li>
+        <li style="background: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2238%22 height=%2238%22 viewBox=%220 0 24 24%22><path fill=%22%239c765c%22 d=%22M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z%22/></svg>') left center no-repeat; background-size: 38px; padding-left: 62px;">
+          <strong>Активная модерация</strong> — мы следим за порядком и чистотой.
+        </li>
+        <li style="background: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2238%22 height=%2238%22 viewBox=%220 0 24 24%22><path fill=%22%239c765c%22 d=%22M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z%22/></svg>') left center no-repeat; background-size: 38px; padding-left: 62px;">
+          <strong>Стабильный хостинг</strong> — сервер работает 24/7 без лагов.
+        </li>
+      </ul>
+
+      <div style="margin-top: 26px; background: #dac8b4; border-radius: 40px; padding: 14px 20px; border: 3px solid #b09078; text-align: center;">
+        <p style="font-size: 1.4rem;">💬 <strong>Присоединяйся!</strong> IP: ast.altyn.games:55090</p>
+      </div>
+    </div>
+
+    <div class="footer">
+      <span>🧡 NoxiCraft — твой дом в майнкрафте</span>
+    </div>
+  </div>
+
+  <!-- ===== НАВИГАЦИЯ МЕЖДУ СТРАНИЦАМИ (JS) ===== -->
+  <script>
+    (function() {
+      // все контейнеры страниц
+      const pages = {
+        index: document.getElementById('page-index'),
+        rules: document.getElementById('page-rules'),
+        about: document.getElementById('page-about')
+      };
+
+      // функция показать страницу
+      function showPage(id) {
+        // скрыть все
+        for (let key in pages) {
+          pages[key].style.display = 'none';
+        }
+        // показать нужную
+        if (pages[id]) {
+          pages[id].style.display = 'block';
+        }
+        // обновить URL хеш без перезагрузки
+        if (history.pushState) {
+          history.pushState(null, null, '#' + id);
+        }
+      }
+
+      // Обработка кликов по ссылкам с data-page или href="#page-..."
+      document.addEventListener('click', function(e) {
+        const target = e.target.closest('a');
+        if (!target) return;
+
+        // если ссылка ведёт на страницу вида #page-xxx
+        const href = target.getAttribute('href');
+        if (href && href.startsWith('#page-')) {
+          e.preventDefault();
+          const pageId = href.replace('#page-', '');
+          if (pages[pageId]) {
+            showPage(pageId);
+          }
+        }
+      });
+
+      // обработка хеша при загрузке
+      window.addEventListener('load', function() {
+        const hash = window.location.hash.replace('#', '');
+        if (hash && pages[hash]) {
+          showPage(hash);
+        } else {
+          // по умолчанию показываем index
+          showPage('index');
+        }
+      });
+
+      // обработка кнопки назад/вперёд
+      window.addEventListener('popstate', function() {
+        const hash = window.location.hash.replace('#', '');
+        if (hash && pages[hash]) {
+          showPage(hash);
+        } else {
+          showPage('index');
+        }
+      });
+
+      // дополнительно: если клик по ссылке с data-page (для безопасности)
+      document.querySelectorAll('[data-page]').forEach(link => {
+        link.addEventListener('click', function(e) {
+          e.preventDefault();
+          const page = this.getAttribute('data-page');
+          if (pages[page]) showPage(page);
+        });
+      });
+    })();
+  </script>
+
+</body>
+</html>
