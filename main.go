@@ -24,3 +24,4 @@ func getPr(w http.ResponseWriter, r *http.Request){
 
 func getFavicon(w http.ResponseWriter, r *http.Request){
 	http.ServeFile(w, r, "favicon.ico")
+}
