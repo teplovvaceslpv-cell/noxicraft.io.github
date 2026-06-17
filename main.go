@@ -2,6 +2,7 @@ package main
 import "net/http"
 
 func main(){
+	http.HandleFunc("/favicon.ico", getFavicon)
 	http.HandleFunc("/", getMain)
 	http.HandleFunc("/info", getInfo)
 	http.HandleFunc("/pravila", getPr)
@@ -20,3 +21,6 @@ func getInfo(w http.ResponseWriter, r *http.Request){
 func getPr(w http.ResponseWriter, r *http.Request){
 	http.ServeFile(w, r, "pravila.html")
 }
+
+func getFavicon(w http.ResponseWriter, r *http.Request){
+	http.ServeFile(w, r, "favicon.ico")
